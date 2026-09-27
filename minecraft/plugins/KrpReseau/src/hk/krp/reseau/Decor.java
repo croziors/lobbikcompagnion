@@ -29,7 +29,7 @@ final class Decor {
     /* ------------------------------------------------------------------ tout */
     void toutCommun() {
         nettoyer();
-        disque(); centre(); salon(); arrivee(); ecrans(); murEcrans();
+        disque(); centre(); salon(); arrivee(); ecrans(); murEcrans(); porteAtelier();
         ponts();
         allees(true); allees(false);
         porte(Geo.PORTE_TOUR_X, true); porte(Geo.PORTE_CUBE_X, false);
@@ -158,6 +158,16 @@ final class Decor {
             b(x, y, z - 1, Material.BLACK_CONCRETE);
         }
         for (int x = Ecrans.X0; x < Ecrans.X0 + Ecrans.COLS; x++) for (int y = Ecrans.Y_HAUT - Ecrans.LIGNES + 1; y <= Ecrans.Y_HAUT; y++) b(x, y, Ecrans.Z_CADRES, Material.AIR);
+    }
+
+    /** La porte de l'Atelier (serveur moddé CC: Tweaked) : cadre de cuivre et lumière ocre, au sud de l'arrivée. */
+    private void porteAtelier() {
+        int z = Geo.ATELIER_Z, cx = Geo.HUB_X;
+        for (int x = cx - 3; x <= cx + 3; x++) for (int y = 63; y <= Geo.PORTE_HAUT + 2; y++) {
+            boolean cadre = Math.abs(x - cx) == 3 || y == Geo.PORTE_HAUT + 1 || y == Geo.PORTE_HAUT + 2 || y == 63;
+            b(x, y, z, !cadre ? Material.AIR : (y == Geo.PORTE_HAUT + 2 && Math.abs(x - cx) <= 2) || (Math.abs(x - cx) == 3 && y > 63 && y <= Geo.PORTE_HAUT) ? Material.OCHRE_FROGLIGHT : Material.WAXED_CUT_COPPER);
+        }
+        for (int zz = z - 3; zz < z; zz++) for (int x = cx - 2; x <= cx + 2; x++) b(x, 63, zz, x == cx ? Material.OCHRE_FROGLIGHT : Material.WAXED_CUT_COPPER);
     }
 
     /* ------------------------------------------------------------------ ponts */

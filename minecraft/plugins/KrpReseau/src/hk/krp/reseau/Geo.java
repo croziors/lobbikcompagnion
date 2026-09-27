@@ -34,6 +34,9 @@ final class Geo {
     /** Vestibule du Cube : une pièce blanche posée devant sa face est, séparée par 3 blocs de vide. */
     static final int VESTIBULE_X1 = -197, VESTIBULE_X2 = -189, VESTIBULE_DEMI = 3;   // face est du Cube en x = −201, 3 blocs de vide entre les deux
 
+    /** Porte de l'Atelier (serveur moddé, hors réseau) : au sud de l'arrivée, on la passe en allant vers le sud. */
+    static final int ATELIER_Z = HUB_Z + 29;
+
     /** Hauteur des portes (murs colorés) : de y = 64 à 67. */
     static final int PORTE_BAS = 64, PORTE_HAUT = 67;
 

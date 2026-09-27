@@ -326,7 +326,7 @@ log-command-executions = false
 
 # Allows players transferred from other hosts via the
 # Transfer packet (Minecraft 1.20.5) to be received.
-accepts-transfers = false
+accepts-transfers = true
 
 # Enables support for SO_REUSEPORT. This may help the proxy scale better on multicore systems
 # with a lot of incoming connections, and provide better CPU utilization than the existing

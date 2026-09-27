@@ -45,7 +45,7 @@ import org.joml.Vector3f;
  */
 public final class KrpReseau extends JavaPlugin implements Listener, PluginMessageListener {
     static final String CANAL = "lobbik:reseau";
-    private static final String VERSION_DECOR = "4";   // 2 : Cube habillé ; 3 : hub propre et moderne (Volt) ; 4 : mur d'écrans
+    private static final String VERSION_DECOR = "5";   // 2 : Cube habillé ; 3 : hub propre et moderne (Volt) ; 4 : mur d'écrans ; 5 : porte de l'Atelier
 
     private String role; private World monde; private Hub hub; private Billets billets; private Portes portes; private Panneaux panneaux; private Ecrans ecrans;
     private final Map<UUID, Long> enPassage = new ConcurrentHashMap<>();
@@ -214,8 +214,11 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
         Location a = e.getFrom(), b = e.getTo();
         Player p = e.getPlayer();
         if (b.getY() < 40) { tombe(p); return; }
-        if (a.getBlockX() == b.getBlockX() && a.getBlockZ() == b.getBlockZ() && Math.floor(a.getX() * 4) == Math.floor(b.getX() * 4)) return;
+        if (Math.floor(a.getX() * 4) == Math.floor(b.getX() * 4) && Math.floor(a.getZ() * 4) == Math.floor(b.getZ() * 4)) return;   // au quart de bloc près : les plans des portes sont au milieu d'un bloc
         if (!Geo.surPont(b.getX(), b.getZ()) && !hub()) return;
+        if (hub() && getConfig().getBoolean("atelier.actif", true) && Math.abs(b.getX() - (Geo.HUB_X + 0.5)) < 2.6 && a.getZ() < Geo.ATELIER_Z + 0.5 && b.getZ() >= Geo.ATELIER_Z + 0.5 && b.getY() < Geo.PORTE_HAUT + 1) {
+            e.setTo(a.clone().add(0, 0, -0.4)); atelier(p); return;
+        }
         if (hub()) {
             for (Portes.Porte po : portes.toutes()) {
                 double gx = po.x + 0.5; int s = po.sens();
@@ -288,6 +291,43 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
         else { if (p.getX() < Geo.CUBE_X0 + Geo.CUBE_COTE + 1 && p.getX() > Geo.CUBE_X0 - 2 && Math.abs(p.getZ()) < 52) return; l = Geo.bordCube(monde); }
         p.teleport(l); p.setFallDistance(0);
         p.sendActionBar(Component.text("Attention au vide !", NamedTextColor.GRAY));
+    }
+
+    /* ================================================================== l'Atelier (serveur moddé, hors réseau) */
+    private final Set<UUID> versAtelier = ConcurrentHashMap.newKeySet();
+    /** Client moddé ? Fabric + CC: Tweaked annoncent leurs canaux (computercraft:…) à la connexion ; le proxy les transmet à chaque serveur. */
+    private static boolean modde(Player p) { for (String c : p.getListeningPluginChannels()) if (c.startsWith("computercraft:")) return true; return false; }
+    private void atelier(Player p) {
+        if (!estMembre(p)) { p.sendActionBar(Component.text("Liez d'abord votre compte sur lobbik.com (code : " + codePour(p.getUniqueId()) + ")", NamedTextColor.AQUA)); return; }
+        if (!modde(p)) {
+            Long t = fileDemandee.get(p.getUniqueId()); if (t != null && System.currentTimeMillis() - t < 4000) return;
+            fileDemandee.put(p.getUniqueId(), System.currentTimeMillis());
+            p.sendMessage(Component.text("L'Atelier demande le client moddé (Fabric + CC: Tweaked + Macaw's).", NamedTextColor.GOLD));
+            p.sendMessage(Component.text("Installez-le en un clic : lobbik.com → Minecraft → L'Atelier → « Installer », avec le Compagnon. Puis lancez « Minecraft Lobbik Atelier ».", NamedTextColor.GRAY));
+            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, 0.8f);
+            return;
+        }
+        if (!versAtelier.add(p.getUniqueId())) return;
+        String hote = getConfig().getString("atelier.hote", "minecraft.lobbik.com"); int port = getConfig().getInt("atelier.port", 25567);
+        p.showTitle(Title.title(Component.text("L'Atelier", TextColor.color(0xFFC53D), TextDecoration.BOLD), Component.text("Ouverture de l'Atelier…", NamedTextColor.GRAY), Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(30), Duration.ofMillis(300))));
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            boolean pret = enLigne("127.0.0.1", port);
+            if (!pret) {
+                try { new ProcessBuilder("sudo", "-n", "/usr/bin/systemctl", "start", "minecraft-atelier.service").redirectErrorStream(true).start().waitFor(); } catch (Exception ex) { getLogger().warning("Atelier : démarrage impossible : " + ex); }
+                for (int i = 0; i < 60 && !pret; i++) { try { Thread.sleep(1500); } catch (InterruptedException ie) { break; } pret = enLigne("127.0.0.1", port); }
+            }
+            final boolean ok = pret;
+            Bukkit.getScheduler().runTask(this, () -> {
+                versAtelier.remove(p.getUniqueId());
+                if (!p.isOnline()) return;
+                if (!ok) { p.clearTitle(); p.sendMessage(Component.text("L'Atelier ne répond pas pour le moment. Réessayez dans une minute.", NamedTextColor.RED)); return; }
+                p.transfer(hote, port);
+            });
+        });
+    }
+    /** Le serveur répond-il (connexion TCP) ? */
+    private static boolean enLigne(String hote, int port) {
+        try (java.net.Socket s = new java.net.Socket()) { s.connect(new java.net.InetSocketAddress(hote, port), 800); return true; } catch (Exception e) { return false; }
     }
 
     /* ================================================================== messages du proxy */

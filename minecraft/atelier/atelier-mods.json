@@ -1,0 +1,63 @@
+{
+ "minecraft": "26.2",
+ "fabric_loader": "0.19.5",
+ "installateur_fabric": "1.1.2",
+ "mods": [
+  {
+   "projet": "fabric-api",
+   "version": "0.161.0+26.2",
+   "fichier": "fabric-api-0.161.0+26.2.jar",
+   "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/ewUK83HI/fabric-api-0.161.0%2B26.2.jar",
+   "sha512": "2502fa5ade78e9a120b3747bc1a9a2167d6671743bea45bf115d3174c94121aeda87c549446d1a604a9c11fb828de17a551e3514ce42f3e93069dd14bdaee55b",
+   "taille": 2566123,
+   "client": null
+  },
+  {
+   "projet": "cc-tweaked",
+   "version": "1.120.2",
+   "fichier": "cc-tweaked-26.2-fabric-1.120.2.jar",
+   "url": "https://cdn.modrinth.com/data/gu7yAYhd/versions/P99UehrV/cc-tweaked-26.2-fabric-1.120.2.jar",
+   "sha512": "80acd2d52a1efcc562ee0ab0422536556d8a275c32d8be19b45186c6d3c13843317d3240ebba90bc40f45fceb0e96b3198dd0f0e3c3bb4bec90c97d52252b66b",
+   "taille": 3074609,
+   "client": null
+  },
+  {
+   "projet": "macaws-furniture",
+   "version": "3.4.1",
+   "fichier": "mcw-furniture-3.4.2-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/dtWC90iB/versions/ptL25rVF/mcw-furniture-3.4.2-mc26.2fabric.jar",
+   "sha512": "ed39b132609eb31ad7205d667f844097ef04d66a44982f260216cab049f42ebc9458ffd27f251cd67294aa36ba84eaab9bab763e1e6db92f645c51b776ac31d5",
+   "taille": 2386965,
+   "client": null
+  },
+  {
+   "projet": "macaws-roofs",
+   "version": "2.3.2",
+   "fichier": "mcw-roofs-2.3.3-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/B8jaH3P1/versions/2NEmd2hl/mcw-roofs-2.3.3-mc26.2fabric.jar",
+   "sha512": "bb4a66e8c7def85436de99040f6be44698874c6aac7a708b4c39ba4fc70f97d0bfa264520118d6cc5a221f7142e419c652f1ab28834b837f4a4968665f792d21",
+   "taille": 1925146,
+   "client": null
+  },
+  {
+   "projet": "macaws-windows",
+   "version": "2.4.2",
+   "fichier": "mcw-windows-2.4.2-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/C7I0BCni/versions/sNXCQQn1/mcw-windows-2.4.2-mc26.2fabric.jar",
+   "sha512": "74321ba9cc1cf3f0a9b1f3b77b07707880dfa2a984760585a0d59ecf84bf4f19cb36114272af8067bd341b768da64b26eba819bbf20166be6091943de7704adc",
+   "taille": 1402302,
+   "client": null
+  },
+  {
+   "projet": "macaws-doors",
+   "version": "1.1.5",
+   "fichier": "mcw-doors-1.1.5-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/kNxa8z3e/versions/XxNfkmgt/mcw-doors-1.1.5-mc26.2fabric.jar",
+   "sha512": "c64c0caa32fd0125f212554b63ace62996e6a0d2e51b8ab1dd1d9cf09b5fdd6a956fdf2e9d59e857dc075a69b066317cb33e0b8d61a2359e2e049a0795ef9cf5",
+   "taille": 1451361,
+   "client": null
+  }
+ ],
+ "serveur": "minecraft.lobbik.com",
+ "date": "2026-09-27"
+}

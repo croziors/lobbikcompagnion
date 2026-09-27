@@ -85,6 +85,8 @@ velocite $T
 cp $S/KrpTour.jar $T/plugins/KrpTour.jar
 grep -q "^envoi_site:" $T/plugins/KrpTour/config.yml || printf 'envoi_site: true\nreseau:\n  actif: true\n' >> $T/plugins/KrpTour/config.yml
 reseau $T tour 25581 "La Tour" "#FFB347" false false
+# le même pack de données partout (hauteur du monde, ciel de nuit, nuages) : sinon le passage sans coupure est impossible
+rm -rf $T/world/datapacks/krp-tour; cp -r $S/datapack/krp-tour $T/world/datapacks/
 # mémoire : la Tour n'a pas besoin de 2,5 Go pré-réservés
 sed -i 's/-Xms1536M -Xmx2560M/-Xms512M -Xmx1536M/; s/ -XX:+AlwaysPreTouch//' /etc/systemd/system/minecraft.service
 
@@ -125,6 +127,8 @@ simulation-distance=4
 max-players=1000
 level-name=world
 level-seed=$SEED
+level-type=minecraft\:flat
+generator-settings={}
 allow-nether=false
 spawn-protection=0
 gamemode=adventure
@@ -135,6 +139,14 @@ sync-chunk-writes=false
 enable-rcon=false
 motd=Lobbik (hub)
 P
+# pack de textures proposé à l'arrivée (Faithful 32x hébergé sur GitHub, facultatif)
+grep -q '^resource-pack=' $H/server.properties || cat >> $H/server.properties <<'PACK'
+resource-pack=https://github.com/croziors/lobbikcompagnion/releases/download/textures-faithful32x-26.2/Lobbik-Textures-Faithful32x-26.2.zip
+resource-pack-sha1=48dc52a6bbceab45fe385451372d7e1633eb3bf4
+resource-pack-id=7f1c2a5e-4b8d-4e3a-9c6f-1a2b3c4d5e6f
+resource-pack-prompt={"text": "", "extra": [{"text": "Pack de textures Faithful 32x", "color": "#c6f500", "bold": true}, {"text": " (faithfulpack.net) : le m\u00eame Minecraft, plus beau, sans ralentir. Recommand\u00e9 !", "color": "white"}]}
+require-resource-pack=false
+PACK
 [ -f $H/bukkit.yml ] || printf 'settings:\n  allow-end: false\n  connection-throttle: -1\nworlds:\n  world:\n    generator: KrpReseau\n' > $H/bukkit.yml
 mkdir -p $H/config $H/world/datapacks
 [ -f $H/config/paper-global.yml ] || cp $T/config/paper-global.yml $H/config/paper-global.yml

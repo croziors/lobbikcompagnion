@@ -22,6 +22,9 @@ Conditions : mêmes registres partout (même Paper, même pack de données `krp-
 | `plugins/KrpReseau` | Plugin des serveurs (rôle hub / tour / cube) : billets, portes colorées par joueur, allées de file d'attente, décor commun, écrans en direct (cartes), panneaux des serveurs |
 | `plugins/KrpTour`, `plugins/KrpCube` | Les deux jeux |
 | `deploiement/` | Installation du réseau de test, bascule en production et retour arrière |
-| `datapack/krp-tour` | Monde surélevé (hauteur 1 216) |
+| `datapack/krp-tour` | Monde surélevé (hauteur 1 216), ciel de nuit bleu profond, étoiles vives, mer de nuages |
+| `atelier/` | **L'Atelier** : serveur moddé (Fabric 26.2 + CC: Tweaked + Macaw's), démarré à la demande, liste des mods figée (Modrinth, SHA-512), écran Lua des scores en direct |
 
 Les clés (secret de transfert du proxy, clé du réseau, clé du site) sont générées sur le serveur et ne sont jamais dans ce dépôt.
+
+Le pack de textures proposé aux joueurs est **Faithful 32x** (https://faithfulpack.net, licence Faithful), non modifié, en téléchargement dans les Releases (`textures-faithful32x-26.2`).

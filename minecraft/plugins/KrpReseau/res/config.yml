@@ -33,3 +33,8 @@ cube_pieges: 20
 # Mur d'écrans du hub : états en direct écrits par KrpTour et KrpCube (lus toutes les 2 s).
 ecrans_tour: /srv/minecraft/serveur/plugins/KrpTour/direct.json
 ecrans_cube: /srv/minecraft/cube/plugins/KrpCube/direct.json
+# L'Atelier (serveur moddé, hors réseau) : porte au sud de l'arrivée du hub ; démarré à la demande (sudo systemctl start minecraft-atelier.service).
+atelier:
+  actif: true
+  hote: minecraft.lobbik.com
+  port: 25567
