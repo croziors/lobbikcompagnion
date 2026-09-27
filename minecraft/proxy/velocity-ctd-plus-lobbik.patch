@@ -1,0 +1,155 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/BackendPlaySessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/BackendPlaySessionHandler.java
+index 00fe3c0..bb2648d 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/BackendPlaySessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/BackendPlaySessionHandler.java
+@@ -198,6 +198,7 @@ public class BackendPlaySessionHandler implements MinecraftSessionHandler {
+     // otherwise go stale, and a switch would then compare the destination against a world the
+     // client left long ago.
+     playerSessionHandler.rememberClientDimension(packet);
++    playerSessionHandler.getPassage().tracer("réapparition (données gardées=" + packet.getDataToKeep() + ")");
+     return false; // Forward
+   }
+ 
+@@ -488,8 +489,13 @@ public class BackendPlaySessionHandler implements MinecraftSessionHandler {
+ 
+   @Override
+   public void handleUnknown(ByteBuf buf) {
+-    boolean huge = buf.readableBytes() > LARGE_PACKET_THRESHOLD;
+-    playerConnection.delayedWrite(buf.retain());
++    // Lobbik : suivi de ce que ce serveur laisse chez le client (effacé au prochain passage)
++    ByteBuf sortant = playerSessionHandler.getPassage().versClient(buf);
++    if (sortant == null) {
++      return;
++    }
++    boolean huge = sortant.readableBytes() > LARGE_PACKET_THRESHOLD;
++    playerConnection.delayedWrite(sortant == buf ? buf.retain() : sortant);
+     if (huge || ++packetsFlushed >= MAXIMUM_PACKETS_TO_FLUSH) {
+       playerConnection.flush();
+       packetsFlushed = 0;
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java
+index b45c5b5..4029c03 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java
+@@ -186,6 +186,13 @@ public class ConfigSessionHandler implements MinecraftSessionHandler {
+ 
+   @Override
+   public boolean handle(KeepAlivePacket packet) {
++    // Lobbik (27/09/2026) : quand le client est resté en jeu (pas de reconfiguration), c'est le proxy qui répond au
++    // « keepalive » de la phase de configuration du serveur d'arrivée. Relayé au client, la réponse revenait parfois après
++    // la fin de cette phase et le serveur coupait : « keepalive response without matching challenge ».
++    if (clientStayedInPlay()) {
++      serverConn.ensureConnected().write(packet);
++      return true;
++    }
+     serverConn.getPendingPings().put(packet.getRandomId(), System.nanoTime());
+     serverConn.getPlayer().getConnection().write(packet);
+     return true;
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java
+index 1768da8..12ff708 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java
+@@ -33,6 +33,7 @@ import com.velocitypowered.api.event.player.configuration.PlayerEnteredConfigura
+ import com.velocitypowered.api.network.ProtocolVersion;
+ import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
+ import com.velocitypowered.api.proxy.player.ClientWorldSwitches;
++import com.velocitypowered.api.proxy.player.LobbikPassages;
+ import com.velocitypowered.proxy.VelocityServer;
+ import com.velocitypowered.proxy.connection.ConnectionTypes;
+ import com.velocitypowered.proxy.connection.MinecraftConnection;
+@@ -132,6 +133,9 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+    */
+   private int clientEntityId = -1;
+ 
++  // Lobbik : ce que l'ancien serveur a laissé chez le client quand on garde son monde
++  private final LobbikPassage passage;
++
+   private @Nullable String clientDimension;
+ 
+   private final List<UUID> serverBossBars = new ArrayList<>();
+@@ -166,6 +170,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+    */
+   public ClientPlaySessionHandler(VelocityServer server, ConnectedPlayer player) {
+     this.player = player;
++    this.passage = new LobbikPassage(player.getUsername());
+     this.server = server;
+ 
+     if (this.player.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_19_3)) {
+@@ -575,6 +580,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+     VelocityServerConnection serverConnection = player.getConnectedServer();
+     if (serverConnection == null) {
+       // No server connection yet, probably transitioning.
++      passage.versServeur(buf, false);
+       return;
+     }
+ 
+@@ -583,6 +589,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+         && !smc.isClosed()
+         && serverConnection.getPhase().consideredComplete()
+         && smc.getState() == StateRegistry.PLAY;
++    passage.versServeur(buf, stateAllowsForward);
+     if (stateAllowsForward) {
+       smc.write(buf.retain());
+     }
+@@ -648,6 +655,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+ 
+       // Config state clears everything in the client. No need to clear later.
+       spawned = false;
++      passage.oublier();
+       player.clearPlayerListHeaderAndFooterSilent();
+       player.getTabList().clearAllSilent();
+       if (player.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_20_2)) {
+@@ -680,7 +688,12 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+       // Required for Legacy Forge
+       player.getPhase().onFirstJoin(player);
+       rememberClientWorld(joinGame);
++      passage.oublier();
+     } else if (canKeepClientWorld(joinGame)) {
++      // Lobbik : efface les entités, tableaux et effets de l'ancien serveur, remet le mode de jeu,
++      // retient l'écran d'attente et, par le pont, rend la première position relative et nulle.
++      passage.changement(player.getConnection(), true, joinGame.getGamemode(),
++          LobbikPassages.prendrePont(player.getUniqueId()));
+       // The destination has put the player back in the dimension the client already has, under the
+       // entity ID it already has. Withholding the join game and respawn packets is precisely what
+       // stops the client from tearing down and rebuilding its level -- no terrain loading screen.
+@@ -698,6 +711,10 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+       // Clear tab list to avoid duplicate entries
+       player.getTabList().clearAll();
+ 
++      // Lobbik : sans reconfiguration, tableaux et effets de l'ancien serveur resteraient affichés
++      LobbikPassages.oublier(player.getUniqueId());
++      passage.changement(player.getConnection(), false, -1, false);
++
+       // The player is switching from a server already, so we need to tell the client to change
+       // entity IDs and send new dimension information.
+       if (player.getConnection().getType() == ConnectionTypes.LEGACY_FORGE) {
+@@ -765,6 +782,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+ 
+   private void rememberClientWorld(JoinGamePacket joinGame) {
+     clientEntityId = joinGame.getEntityId();
++    passage.moi(clientEntityId);
+     clientDimension = dimensionKey(joinGame.getDimensionInfo(), joinGame.getDimension());
+     ClientWorldSwitches.rememberClientEntityId(player.getUniqueId(), clientEntityId);
+   }
+@@ -844,6 +862,11 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+       return false;
+     }
+ 
++    // Lobbik : le suivi de ce qu'il faut effacer ne connaît que les paquets de 26.1 / 26.2
++    if (!LobbikPassage.prisEnCharge(player.getProtocolVersion())) {
++      return false;
++    }
++
+     return Objects.equals(dimensionKey(joinGame.getDimensionInfo(), joinGame.getDimension()),
+         clientDimension);
+   }
+@@ -888,6 +911,10 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+     player.getConnection().delayedWrite(correctSwitchPacket);
+   }
+ 
++  public LobbikPassage getPassage() {
++    return passage;
++  }
++
+   public List<UUID> getServerBossBars() {
+     return serverBossBars;
+   }

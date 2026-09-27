@@ -1,0 +1,14 @@
+name: KrpCube
+version: 1.3.1
+main: hk.krp.cube.KrpCube
+api-version: '1.21'
+description: Le Cube — labyrinthe de salles cubiques (certaines tuent, quelle que soit la porte), inspiré du film (1997). Carte générée par le plugin.
+author: Lobbik
+load: STARTUP
+commands:
+  recommencer:
+    description: Retourner à la salle de départ (nouvelle tentative)
+    aliases: [restart, depart]
+  cube:
+    description: "Le Cube (info, top, loin)"
+    usage: "/cube [info|top|loin]"

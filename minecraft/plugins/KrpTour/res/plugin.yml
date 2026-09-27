@@ -1,0 +1,19 @@
+name: KrpTour
+version: 1.0.0
+main: hk.krp.tour.KrpTour
+api-version: '1.21'
+description: La Tour du KRP Hub — carte de saut générée, niveaux par cube, classement sur game.krp.hk
+author: KRP Hub
+load: STARTUP
+commands:
+  cp:
+    description: Retourner au dernier point de réapparition atteint
+    aliases: [checkpoint, retour, spawn]
+  niveau:
+    description: Mon niveau et mon record
+    aliases: [level]
+  top:
+    description: Les meilleurs grimpeurs
+  tour:
+    description: Administration de la Tour (regenerer, stats)
+    permission: krptour.admin

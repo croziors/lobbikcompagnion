@@ -1,0 +1,28 @@
+# Le Cube — dimensions de la grille (salles) : largeur (x) × niveaux (y) × profondeur (z). 10 × 10 salles par niveau sur 10 niveaux = 1 000 salles.
+graine: 20260923
+largeur: 10
+niveaux: 10
+profondeur: 10
+# Depuis le 23/09/2026 au soir, c'est la SALLE qui tue (comme dans le film) : le plan désigne ~43 % de salles sûres qui forment
+# un labyrinthe 3D ; toutes les autres tuent, quelle que soit la porte. « pieges » n'est plus utilisé (gardé pour compatibilité).
+# La graine est une demande : si elle ne donne pas un chemin assez varié (≥ 6 inversions haut/bas), le plugin essaie les suivantes.
+# Changer la graine puis redémarrer = nouveau labyrinthe, reconstruit automatiquement (marqueur cube-<empreinte>.ok), tout le monde au départ.
+pieges: 20
+# Lobbik : serveur réservé aux membres dont le compte Minecraft est lié (même liste que La Tour). cle = clé de /etc/aoe4/minecraft_site.json
+hub: https://lobbik.com
+cle: ""
+# Admins du Cube (UUID) : seuls eux, plus la console / RCON, ont /cube porte, ou, ouvrir, solution, regenerer — le statut op n'y donne PAS accès.
+# Par défaut : croziors (Kripy).
+admins:
+  - caa13678-f5cd-4801-bbaf-f4fe4bc5924f
+# false sur un serveur de test : on lit la liste des membres, on n'envoie rien au site (scores, positions, carte).
+envoi_site: true
+# Réseau Lobbik (27/09/2026) : le Cube posé à côté du hub, relié par un pont. Inactif par défaut (Cube à l'origine, comme avant).
+reseau:
+  actif: false
+  origine_x: -300
+  origine_z: -50
+  # vestibule blanc au bout du pont (x1,x2,z1,z2,y1,y2) : y entrer fait « se réveiller » dans la salle blanche
+  vestibule: "-196,-190,-2,2,64,68"
+  # où l'on sort après une victoire : sur le pont, face au hub
+  sortie_pont: "-186.5,64,0.5,-90"

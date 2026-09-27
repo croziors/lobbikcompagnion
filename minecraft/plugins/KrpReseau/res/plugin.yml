@@ -1,0 +1,16 @@
+name: KrpReseau
+version: 1.0.0
+main: hk.krp.reseau.KrpReseau
+api-version: '1.21'
+description: Réseau Minecraft Lobbik — hub féerique, ponts sans coupure entre serveurs, portes colorées et file d'attente, chat commun
+author: Lobbik
+load: STARTUP
+commands:
+  lobbik:
+    description: Revenir sur Lobbik (le hub)
+    aliases: [hub, lobby]
+  file:
+    description: File d'attente d'un serveur plein (tour, cube, quitter)
+permissions:
+  krpreseau.admin:
+    default: op

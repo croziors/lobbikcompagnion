@@ -1,0 +1,35 @@
+# KrpReseau — réseau Minecraft Lobbik (27/09/2026)
+# Rôle de ce serveur : hub (l'île « Lobbik »), tour ou cube.
+role: hub
+# Nom et couleur affichés dans le chat commun.
+nom: Lobbik
+couleur: "#7CFF4F"
+# Nom du hub pour le proxy (velocity.toml).
+hub_nom: hub
+# Port local où le proxy dépose les billets d'arrivée, et clé partagée avec lui (reseau.properties du proxy).
+port_controle: 25580
+cle_reseau: A_CHANGER
+# Site Lobbik : comptes liés (membres), codes de liaison, salon #minecraft.
+site: https://lobbik.com
+cle_site: ""
+# false sur les serveurs de test : on lit la liste des membres, on n'envoie rien au site.
+envoi_site: true
+pont_chat_site: false
+lire_chat_site: false
+membres_seulement: true
+# Heure fixe du monde (18000 = minuit, comme La Tour et Le Cube) : la même partout, le ciel ne saute pas au passage.
+heure: 18000
+# Secondes pendant lesquelles la porte reste ouverte pour celui dont c'est le tour (même valeur que le proxy).
+ouverture: 45
+# Répliques vues de loin (graines identiques à celles des vrais serveurs).
+replique_tour: true
+replique_cube: true
+graine_tour: 20260919
+graine_cube: 20260923
+cube_largeur: 10
+cube_niveaux: 10
+cube_profondeur: 10
+cube_pieges: 20
+# Mur d'écrans du hub : états en direct écrits par KrpTour et KrpCube (lus toutes les 2 s).
+ecrans_tour: /srv/minecraft/serveur/plugins/KrpTour/direct.json
+ecrans_cube: /srv/minecraft/cube/plugins/KrpCube/direct.json

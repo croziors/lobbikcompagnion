@@ -1,0 +1,1 @@
+{"id":"lobbikreseau","name":"LobbikReseau","version":"1.0.0","description":"Réseau Lobbik : ponts sans coupure, files d'attente, chat commun","authors":["Lobbik"],"dependencies":[],"main":"hk.krp.reseau.proxy.LobbikReseau"}

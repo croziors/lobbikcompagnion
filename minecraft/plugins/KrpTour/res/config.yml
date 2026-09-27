@@ -1,0 +1,9 @@
+# KrpTour — réglages
+hub: https://lobbik.com
+cle: ""
+graine: 20260919
+# false sur un serveur de test : on lit la liste des membres, on n'envoie rien au site (scores, positions, chat).
+envoi_site: true
+# Réseau Lobbik (27/09/2026) : la Tour reliée au hub par un pont (dalle dorée « reprendre », arrivée sans téléportation).
+reseau:
+  actif: false
