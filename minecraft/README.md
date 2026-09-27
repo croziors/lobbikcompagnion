@@ -28,3 +28,19 @@ Conditions : mêmes registres partout (même Paper, même pack de données `krp-
 Les clés (secret de transfert du proxy, clé du réseau, clé du site) sont générées sur le serveur et ne sont jamais dans ce dépôt.
 
 Le pack de textures proposé aux joueurs est **Faithful 32x** (https://faithfulpack.net, licence Faithful), non modifié, en téléchargement dans les Releases (`textures-faithful32x-26.2`).
+
+## Réseau moddé (Fabric), en production depuis le 27/09/2026
+
+Tout le réseau Lobbik tourne désormais en **Fabric** (Minecraft 26.2) avec un seul mod serveur maison, `fabric/` (paquet `hk.krp.lobbik`) :
+
+- **Rôle** d'un serveur dans `config/lobbik.properties` : `hub`, `tour`, `cube` ou `lave`.
+- **Passage sans écran de chargement** : billets déposés par le proxy + mixin `PlayerList.placeNewPlayer` qui reprend le numéro d'entité du client.
+- **Hub** : portes par joueur, file d'attente, décor Volt, écrans CC: Tweaked en direct (`Ordinateurs.java`, `resources/lobbik/ecran-hub.lua`), copies des jeux vues de loin (`Repliques.java`).
+- **La Tour** (`tour/`), **Le Cube** (`cube/`) et **la Mer de lave** (`lave/` : 800 blocs de sauts au-dessus d'une mer de lave, 4 réapparitions).
+- **Tags de clan et badges de réussite** dans le chat.
+
+Mods côté serveur et client : `atelier/atelier-mods.json`. Le Compagnon Lobbik installe le client moddé et resynchronise les mods tout seul.
+
+Compilation : `cd fabric && ./gradlew build` (JDK 25).
+
+Déploiement : `deploiement-fabric/bascule-fabric.sh` (production, sauvegarde + retour arrière `retour-paper.sh`) et `test-installer.sh` (serveurs de test). Aucune clé n'est dans ce dépôt : elles sont lues dans des fichiers du serveur.

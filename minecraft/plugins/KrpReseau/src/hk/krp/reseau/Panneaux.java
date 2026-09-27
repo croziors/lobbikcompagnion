@@ -44,13 +44,13 @@ final class Panneaux {
             .append(Component.text("▶ ", TextColor.color(0xFFB347))).append(Component.text("À droite : La Tour", NamedTextColor.WHITE)).append(Component.newline())
             .append(Component.text("◀ ", TextColor.color(0x5AB4FF))).append(Component.text("À gauche : Le Cube", NamedTextColor.WHITE)).append(Component.newline())
             .append(Component.text("▲ ", TextColor.color(0x7CFF4F))).append(Component.text("Devant : le salon, pour discuter", NamedTextColor.WHITE)).append(Component.newline())
-            .append(Component.text("▼ ", TextColor.color(0xFFC53D))).append(Component.text("Derrière : L'Atelier (moddé)", NamedTextColor.WHITE)).append(Component.newline()).append(Component.newline())
+            .append(Component.text("▼ ", TextColor.color(0xFFC53D))).append(Component.text("Derrière : Oasis (moddé)", NamedTextColor.WHITE)).append(Component.newline()).append(Component.newline())
             .append(Component.text("Mur vert : on passe · rouge : plein, file d'attente", NamedTextColor.GRAY)).append(Component.newline())
             .append(Component.text("/lobbik pour revenir ici de partout", NamedTextColor.DARK_GRAY)));
         atelier = texte(new Location(w, Geo.HUB_X + 0.5, Geo.PORTE_HAUT + 4.2, Geo.ATELIER_Z + 0.5), 1.4f, Display.Billboard.CENTER, 0);
-        atelier.text(Component.text("L'ATELIER", TextColor.color(0xFFC53D), TextDecoration.BOLD).append(Component.newline())
+        atelier.text(Component.text("OASIS", TextColor.color(0xFFC53D), TextDecoration.BOLD).append(Component.newline())
             .append(Component.text("ordinateurs et écrans CC: Tweaked, meubles", NamedTextColor.WHITE)).append(Component.newline())
-            .append(Component.text("client moddé : lobbik.com → Minecraft → L'Atelier", NamedTextColor.GRAY)));
+            .append(Component.text("client moddé : lobbik.com → Minecraft → Oasis", NamedTextColor.GRAY)));
         Bukkit.getScheduler().runTaskTimerAsynchronously(pl, this::lireSite, 20, 20 * 30);
         Bukkit.getScheduler().runTaskTimer(pl, this::rendre, 40, 40);
     }

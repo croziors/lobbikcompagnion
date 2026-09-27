@@ -1,5 +1,5 @@
 #!/bin/bash
-# L'Atelier de Lobbik (27/09/2026) : 4e serveur Minecraft, MODDÉ (Fabric 26.2 + CC: Tweaked + Macaw's), créatif.
+# Oasis (ex-« L'Atelier », renommé le 27/09/2026 à la demande de Kripy) : 4e serveur Minecraft de Lobbik, MODDÉ (Fabric 26.2 + CC: Tweaked + Macaw's), créatif.
 # Joignable en direct sur minecraft.lobbik.com:25567 (hors proxy : ses registres diffèrent des serveurs vanilla), depuis le hub
 # par une porte (transfert). Démarré À LA DEMANDE (sudo systemctl start, permis au seul compte minecraft), arrêté après 10 min
 # sans joueur. Liste blanche = comptes Minecraft liés à Lobbik (mc_permis), relue toutes les 2 min.
@@ -13,7 +13,7 @@ cp $S/fabric-server.jar $V/fabric-server.jar
 python3 - "$S/atelier-mods.json" "$V/mods" <<'PY'
 import json,sys,os,hashlib,urllib.request
 d=json.load(open(sys.argv[1])); dos=sys.argv[2]; garder=set()
-for m in d['mods']:
+for m in [m for m in d['mods'] if m.get('cote')!='client']:   # mods « client » (animations) : jamais sur le serveur
     f=os.path.join(dos,m['fichier']); garder.add(m['fichier'])
     if os.path.exists(f) and hashlib.sha512(open(f,'rb').read()).hexdigest()==m['sha512']: continue
     data=urllib.request.urlopen(urllib.request.Request(m['url'],headers={'User-Agent':'lobbik-atelier/1.0 (lobbik.com)'})).read()
@@ -45,7 +45,7 @@ allow-nether=false
 enable-rcon=true
 rcon.port=25577
 rcon.password=$RCON
-motd=§aL'Atelier de Lobbik §7— moddé : CC\: Tweaked, Macaw's §8· client moddé via le Compagnon
+motd=\u00a7aOasis \u00a77— le serveur moddé de Lobbik : CC\: Tweaked, Macaw's \u00a78· client moddé via le Compagnon
 P
 [ -f ops.json ] || echo '[{"uuid":"caa13678-f5cd-4801-bbaf-f4fe4bc5924f","name":"croziors","level":4,"bypassesPlayerLimit":true}]' > ops.json
 mkdir -p /root/bin
@@ -54,7 +54,7 @@ cp $S/ecran.lua $V/ecran.lua
 chown -R minecraft:minecraft $V; chown -h minecraft:minecraft $M/atelier; chmod 600 $V/.rcon
 cat > /etc/systemd/system/minecraft-atelier.service <<U
 [Unit]
-Description=Minecraft — L'Atelier de Lobbik (Fabric 26.2 + CC: Tweaked, à la demande)
+Description=Minecraft — Oasis, le serveur moddé de Lobbik (Fabric 26.2 + CC: Tweaked, à la demande)
 After=network-online.target
 
 [Service]
@@ -66,6 +66,7 @@ ExecStart=$J -Xms256M -Xmx1024M -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+Disab
 ExecStartPost=/bin/sh -c 'sleep 1; /usr/bin/python3 /root/bin/atelier-spawn.py &'
 ExecStop=/bin/kill -SIGINT \$MAINPID
 TimeoutStopSec=90
+SuccessExitStatus=0 1 130 143
 Nice=3
 U
 # ExecStartPre/Post tournent en root (« + » serait plus propre, mais le script lit la clé du site réservée à root)

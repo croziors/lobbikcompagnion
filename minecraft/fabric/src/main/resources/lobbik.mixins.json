@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "hk.krp.lobbik.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "server": ["PlayerListMixin", "CubeReapparitionMixin", "CubeMessageMortMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

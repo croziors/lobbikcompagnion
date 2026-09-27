@@ -109,6 +109,7 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
             Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> hub.relireLies(), 0, 20 * 60);
             Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::visiteurs, 200, 200);
         } else {
+            Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> hub.relireClans(), 40, 20 * 60);   // tags de clan (27/09/2026)
             // côté Tour et Cube : le mur vert du retour, visible de tous (on peut toujours revenir au hub)
             int x = "tour".equals(role) ? Geo.PORTE_TOUR_X : Geo.PORTE_CUBE_X;
             mursRetour.add(monde.spawn(new Location(monde, x + 0.42, Geo.PORTE_BAS, -Geo.PONT_DEMI), BlockDisplay.class, d -> {
@@ -151,6 +152,7 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
     public void arrivee(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         Billets.Billet b = billets.prendre(p.getUniqueId());
+        nomListe(p);
         if (!hub()) {
             // connexion directe (sans billet) mais posé du mauvais côté de la porte, dans le décor du hub : on le remet sur son pont
             Location l = p.getLocation();
@@ -163,7 +165,7 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
         p.getInventory().clear();
         if (b == null) {
             p.showTitle(Title.title(Panneaux.degrade("LOBBIK"), Component.text("Bienvenue · Welcome · 欢迎", NamedTextColor.GRAY), Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofSeconds(1))));
-            for (Player q : Bukkit.getOnlinePlayers()) if (q != p) q.sendMessage(Component.text(p.getName() + " arrive sur Lobbik", NamedTextColor.DARK_GRAY));
+            for (Player q : Bukkit.getOnlinePlayers()) if (q != p) q.sendMessage(tagClan(p).append(Component.text(p.getName() + " arrive sur Lobbik", NamedTextColor.DARK_GRAY)));
         }
         if (!hub.listeChargee() || !estMembre(p)) Bukkit.getScheduler().runTaskAsynchronously(this, () -> { hub.relireLies(); Bukkit.getScheduler().runTask(this, () -> accueilVisiteur(p)); });
     }
@@ -302,25 +304,25 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
         if (!modde(p)) {
             Long t = fileDemandee.get(p.getUniqueId()); if (t != null && System.currentTimeMillis() - t < 4000) return;
             fileDemandee.put(p.getUniqueId(), System.currentTimeMillis());
-            p.sendMessage(Component.text("L'Atelier demande le client moddé (Fabric + CC: Tweaked + Macaw's).", NamedTextColor.GOLD));
-            p.sendMessage(Component.text("Installez-le en un clic : lobbik.com → Minecraft → L'Atelier → « Installer », avec le Compagnon. Puis lancez « Minecraft Lobbik Atelier ».", NamedTextColor.GRAY));
+            p.sendMessage(Component.text("Oasis demande le client moddé (Fabric + CC: Tweaked + Macaw's).", NamedTextColor.GOLD));
+            p.sendMessage(Component.text("Installez-le en un clic : lobbik.com → Minecraft → « + Oasis (moddé) », avec le Compagnon. Puis lancez « Minecraft Lobbik Oasis ».", NamedTextColor.GRAY));
             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, 0.8f);
             return;
         }
         if (!versAtelier.add(p.getUniqueId())) return;
         String hote = getConfig().getString("atelier.hote", "minecraft.lobbik.com"); int port = getConfig().getInt("atelier.port", 25567);
-        p.showTitle(Title.title(Component.text("L'Atelier", TextColor.color(0xFFC53D), TextDecoration.BOLD), Component.text("Ouverture de l'Atelier…", NamedTextColor.GRAY), Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(30), Duration.ofMillis(300))));
+        p.showTitle(Title.title(Component.text("Oasis", TextColor.color(0xFFC53D), TextDecoration.BOLD), Component.text("Ouverture d'Oasis…", NamedTextColor.GRAY), Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(30), Duration.ofMillis(300))));
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             boolean pret = enLigne("127.0.0.1", port);
             if (!pret) {
-                try { new ProcessBuilder("sudo", "-n", "/usr/bin/systemctl", "start", "minecraft-atelier.service").redirectErrorStream(true).start().waitFor(); } catch (Exception ex) { getLogger().warning("Atelier : démarrage impossible : " + ex); }
+                try { new ProcessBuilder("sudo", "-n", "/usr/bin/systemctl", "start", "minecraft-atelier.service").redirectErrorStream(true).start().waitFor(); } catch (Exception ex) { getLogger().warning("Oasis : démarrage impossible : " + ex); }
                 for (int i = 0; i < 60 && !pret; i++) { try { Thread.sleep(1500); } catch (InterruptedException ie) { break; } pret = enLigne("127.0.0.1", port); }
             }
             final boolean ok = pret;
             Bukkit.getScheduler().runTask(this, () -> {
                 versAtelier.remove(p.getUniqueId());
                 if (!p.isOnline()) return;
-                if (!ok) { p.clearTitle(); p.sendMessage(Component.text("L'Atelier ne répond pas pour le moment. Réessayez dans une minute.", NamedTextColor.RED)); return; }
+                if (!ok) { p.clearTitle(); p.sendMessage(Component.text("Oasis ne répond pas pour le moment. Réessayez dans une minute.", NamedTextColor.RED)); return; }
                 p.transfer(hote, port);
             });
         });
@@ -362,10 +364,11 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
         if (texte.isEmpty()) return;
         if (hub() && !estMembre(p)) { p.sendMessage(Component.text("Liez votre compte sur lobbik.com pour parler (code : " + codePour(p.getUniqueId()) + ").", NamedTextColor.AQUA)); return; }
         TextColor c = TextColor.fromHexString(getConfig().getString("couleur", "#7CFF4F"));
-        Component ligne = Component.text("[" + getConfig().getString("nom", "Lobbik") + "] ", c).append(Component.text(p.getName(), NamedTextColor.WHITE)).append(Component.text(" : " + texte, NamedTextColor.GRAY));
+        Component ligne = Component.text("[" + getConfig().getString("nom", "Lobbik") + "] ", c).append(tagClan(p)).append(Component.text(p.getName(), NamedTextColor.WHITE)).append(Component.text(" : " + texte, NamedTextColor.GRAY));
         for (Player q : Bukkit.getOnlinePlayers()) q.sendMessage(ligne);
         Bukkit.getConsoleSender().sendMessage(ligne);
-        envoyer(p, "chat\ttexte=" + texte.replace('\t', ' '));
+        String[] cl = hub.clan(p.getUniqueId());
+        envoyer(p, "chat\ttexte=" + texte.replace('\t', ' ') + (cl != null ? "\ttag=" + cl[0] + "\tcouleur=" + cl[1] : ""));
         if (getConfig().getBoolean("pont_chat_site", false)) hub.envoyer("chat", "{\"uuid\":" + Hub.j(p.getUniqueId().toString()) + ",\"nom\":" + Hub.j(p.getName()) + ",\"message\":" + Hub.j(texte) + "}");
     }
     private void chatSite() {
@@ -378,6 +381,12 @@ public final class KrpReseau extends JavaPlugin implements Listener, PluginMessa
             for (Player q : Bukkit.getOnlinePlayers()) q.sendMessage(c);
         }
     }
+    /* Tag de clan (27/09/2026) : « [TAG] » à la couleur du clan devant le pseudo — chat, arrivée, liste des joueurs (Tab). */
+    private Component tagClan(Player p) {
+        String[] c = hub.clan(p.getUniqueId()); if (c == null) return Component.empty();
+        TextColor col = TextColor.fromHexString(c[1]); return Component.text("[" + c[0] + "] ", col == null ? NamedTextColor.GREEN : col);
+    }
+    private void nomListe(Player p) { p.playerListName(tagClan(p).append(Component.text(p.getName(), NamedTextColor.WHITE))); }
     private static String dej(String s) { return s.replace("\\\"", "\"").replace("\\/", "/").replace("\\n", " ").replace("\\\\", "\\"); }
 
     /* ================================================================== le hub : paisible */

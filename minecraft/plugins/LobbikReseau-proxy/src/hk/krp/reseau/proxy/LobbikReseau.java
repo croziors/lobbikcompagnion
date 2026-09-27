@@ -3,7 +3,9 @@ package hk.krp.reseau.proxy;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.command.CommandExecuteEvent;
+import com.velocitypowered.api.event.ResultedEvent;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
+import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
@@ -86,6 +88,8 @@ public final class LobbikReseau {
         // relancer La Tour avec 50 places suffit, rien à changer ici (Kripy, 27/09/2026)
         proxy.getScheduler().buildTask(this, this::sonder).repeat(5, TimeUnit.SECONDS).schedule();
         proxy.getCommandManager().register(proxy.getCommandManager().metaBuilder("reseau").plugin(this).build(), new Commande(this));
+        if (!reglages.getProperty("moderation", "").isBlank())
+            proxy.getScheduler().buildTask(this, this::moderation).repeat(10, TimeUnit.SECONDS).schedule();
         log.info("Réseau Lobbik prêt — files : {}", files.keySet());
     }
 
@@ -114,7 +118,7 @@ public final class LobbikReseau {
             case "file" -> { File f = files.get(m.get("cible")); if (f != null) entrerFile(p, f); }
             case "quitter" -> { File f = files.get(m.get("cible")); if (f != null) synchronized (f) { f.attente.remove(p.getUniqueId()); f.ouverts.remove(p.getUniqueId()); } }
             case "aller" -> aller(p, m.getOrDefault("cible", hub()));
-            case "chat" -> chat(sc, p, m.getOrDefault("texte", ""));
+            case "chat" -> chat(sc, p, m.getOrDefault("texte", ""), m.get("tag"), m.get("couleur"));
             default -> { }
         }
     }
@@ -217,6 +221,45 @@ public final class LobbikReseau {
         }
     }
 
+    /* ------------------------------------------------------------ modération depuis le site (27/09/2026)
+       Kripy : « le modérateur du site peut expulser et bannir des serveurs de jeu ». Toutes les 10 s, le proxy lit sur le site
+       (réglage moderation = adresse steam.php?a=mc_moderation&cle=…) les bannis du réseau et les expulsions demandées :
+       un banni ne passe plus la porte du proxy (donc d'aucun serveur du réseau), et il est sorti s'il est connecté. */
+    private volatile Map<UUID, String> bannis = Map.of();
+    private final Set<Long> expulsionsFaites = ConcurrentHashMap.newKeySet();
+    private volatile boolean moderationLue = false;
+
+    private void moderation() {
+        HttpRequest rq = HttpRequest.newBuilder(URI.create(reglages.getProperty("moderation"))).timeout(Duration.ofSeconds(8))
+            .header("User-Agent", "lobbik-proxy/1.0").GET().build();
+        http.sendAsync(rq, HttpResponse.BodyHandlers.ofString()).whenComplete((rp, err) -> {
+            if (err != null || rp == null || rp.statusCode() != 200) { if (err != null) log.debug("modération : site injoignable ({})", err.toString()); return; }
+            try {
+                com.google.gson.JsonObject o = com.google.gson.JsonParser.parseString(rp.body()).getAsJsonObject();
+                Map<UUID, String> b = new HashMap<>();
+                for (com.google.gson.JsonElement x : o.getAsJsonArray("bannis")) {
+                    com.google.gson.JsonObject j = x.getAsJsonObject();
+                    b.put(UUID.fromString(j.get("uuid").getAsString()), j.has("message") ? j.get("message").getAsString() : "Banni des serveurs Lobbik.");
+                }
+                bannis = b; moderationLue = true;
+                for (Player p : proxy.getAllPlayers()) { String m = b.get(p.getUniqueId()); if (m != null) { log.info("Banni, sorti du réseau : {}", p.getUsername()); p.disconnect(Component.text(m, NamedTextColor.RED)); } }
+                for (com.google.gson.JsonElement x : o.getAsJsonArray("expulser")) {
+                    com.google.gson.JsonObject j = x.getAsJsonObject();
+                    long id = j.get("id").getAsLong(); if (!expulsionsFaites.add(id)) continue;
+                    UUID u = UUID.fromString(j.get("uuid").getAsString());
+                    String m = j.has("message") ? j.get("message").getAsString() : "Expulsé par la modération de Lobbik.";
+                    proxy.getPlayer(u).ifPresent(p -> { log.info("Expulsé par la modération : {}", p.getUsername()); p.disconnect(Component.text(m, NamedTextColor.GOLD)); });
+                }
+                if (expulsionsFaites.size() > 5000) expulsionsFaites.clear();
+            } catch (Exception ex) { log.warn("modération : réponse illisible ({})", ex.toString()); }
+        });
+    }
+    @Subscribe
+    public void connexion(LoginEvent e) {
+        String m = bannis.get(e.getPlayer().getUniqueId());
+        if (m != null) e.setResult(ResultedEvent.ComponentResult.denied(Component.text(m, NamedTextColor.RED)));
+    }
+
     /** Pas de /server (ni de file du proxy) pour les joueurs : on ne passe que par les ponts et leur file d'attente. */
     @Subscribe
     public void commande(CommandExecuteEvent e) {
@@ -287,10 +330,13 @@ public final class LobbikReseau {
     }
 
     /* ------------------------------------------------------------ chat commun */
-    private void chat(ServerConnection sc, Player p, String texte) {
+    private void chat(ServerConnection sc, Player p, String texte, String tag, String couleur) {
         if (texte.isBlank()) return;
         String depuis = sc.getServerInfo().getName();
-        Component c = Component.text("[" + nomServeur(depuis) + "] ", couleurServeur(depuis)).append(Component.text(p.getUsername(), NamedTextColor.WHITE)).append(Component.text(" : " + texte, NamedTextColor.GRAY));
+        // tag de clan (27/09/2026) donné par le serveur de départ, à la couleur du clan
+        Component clan = Component.empty();
+        if (tag != null && tag.matches("[\\p{L}\\p{N}_.-]{1,6}")) { TextColor tc = couleur != null && couleur.matches("#[0-9a-fA-F]{6}") ? TextColor.fromHexString(couleur) : NamedTextColor.GREEN; clan = Component.text("[" + tag + "] ", tc); }
+        Component c = Component.text("[" + nomServeur(depuis) + "] ", couleurServeur(depuis)).append(clan).append(Component.text(p.getUsername(), NamedTextColor.WHITE)).append(Component.text(" : " + texte, NamedTextColor.GRAY));
         for (Player q : proxy.getAllPlayers()) {
             if (q.getCurrentServer().map(s -> s.getServerInfo().getName().equals(depuis)).orElse(true)) continue;
             q.sendMessage(c);

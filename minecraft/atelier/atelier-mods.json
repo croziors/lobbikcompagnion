@@ -56,6 +56,79 @@
    "sha512": "c64c0caa32fd0125f212554b63ace62996e6a0d2e51b8ab1dd1d9cf09b5fdd6a956fdf2e9d59e857dc075a69b066317cb33e0b8d61a2359e2e049a0795ef9cf5",
    "taille": 1451361,
    "client": null
+  },
+  {
+   "projet": "macaws-bridges",
+   "version": "3.1.2",
+   "fichier": "mcw-bridges-3.1.2-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/GURcjz8O/versions/O570Yvic/mcw-bridges-3.1.2-mc26.2fabric.jar",
+   "sha512": "e1d8c3aeb12c77eb7367881a3e942275b396a15ffe71e17218854630d9b74db2d0b620a51ee34a497506c9ada53e83d1f6750f2b4a126de94d2ddce6db1302a5",
+   "taille": 719851,
+   "client": null
+  },
+  {
+   "projet": "macaws-fences-and-walls",
+   "version": "1.2.1",
+   "fichier": "mcw-fences-1.2.1-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/GmwLse2I/versions/95mwakGs/mcw-fences-1.2.1-mc26.2fabric.jar",
+   "sha512": "ab0f4828d98b99f045a415e164d6471fe47bbc5d4f01ca1442c0144be9f89e35db4e6b30ff847ec919409e040d63904f54f3f113898a9155fd32e579f46d776a",
+   "taille": 705102,
+   "client": null
+  },
+  {
+   "projet": "macaws-lights-and-lamps",
+   "version": "1.1.5",
+   "fichier": "mcw-lights-1.1.5-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/w4an97C2/versions/pgtedKkN/mcw-lights-1.1.5-mc26.2fabric.jar",
+   "sha512": "d6eadbacc626de8403da854fbc7cdf5e30c5b04316d0e65a34ca2397d3a918b97fb3f4ea8f520a55e5f6055e80403d12065e034d7257604eb9da3340f2220425",
+   "taille": 545998,
+   "client": null
+  },
+  {
+   "projet": "macaws-paths-and-pavings",
+   "version": "1.1.1",
+   "fichier": "mcw-paths-1.1.1-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/VRLhWB91/versions/LLYA3vec/mcw-paths-1.1.1-mc26.2fabric.jar",
+   "sha512": "701619d1989432674b7ffc7642e045c222a29c7c42528721107e09b330e6179e5872a920bd00c544809472209d8c1c4259bab28b1cd29b80a9d518bc61f8efa9",
+   "taille": 815169,
+   "client": null
+  },
+  {
+   "projet": "macaws-stairs",
+   "version": "1.0.2",
+   "fichier": "mcw-stairs-1.0.2-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/iP3wH1ha/versions/ovx0xlK3/mcw-stairs-1.0.2-mc26.2fabric.jar",
+   "sha512": "76e6ba779eeacd7a47335bb3160e3bf39b0c570128b93c2975c06e1ef00aa0493da0d411ecb44fe55786f7edfb7f5fe95b3b2e398b1984a15708f4718ceec329",
+   "taille": 568242,
+   "client": null
+  },
+  {
+   "projet": "macaws-trapdoors",
+   "version": "1.1.5",
+   "fichier": "mcw-trapdoors-1.1.5-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/n2fvCDlM/versions/guJEg4jK/mcw-trapdoors-1.1.5-mc26.2fabric.jar",
+   "sha512": "61a04a72e72b9a8d944feebb1f8b106ceed57710656d1934e1b7fbb219cf62c356dac9866a9a6bef6254fc3c9726b345429ebadd63b4d807fd24c67747cf7306",
+   "taille": 641243,
+   "client": null
+  },
+  {
+   "projet": "macaws-paintings",
+   "version": "1.1.0",
+   "fichier": "mcw-paintings-1.1.0-mc26.2fabric.jar",
+   "url": "https://cdn.modrinth.com/data/okE6QVAY/versions/IYqbBWnh/mcw-paintings-1.1.0-mc26.2fabric.jar",
+   "sha512": "f4bcb06c6979ea7bb7706f43b2435d04c00b93f67bf6dc047136225f34b9306e65677906b94b8e49f27db7b7982afaa0212cceadf895ea7a57394fc09f897fd9",
+   "taille": 186776,
+   "client": null
+  },
+  {
+   "projet": "animated-doors",
+   "version": "2.0.2",
+   "fichier": "AnimatedDoors-2.0.2.jar",
+   "url": "https://cdn.modrinth.com/data/EuloLapn/versions/UANUeyMk/AnimatedDoors-2.0.2.jar",
+   "sha512": "80a006c9694aeea7483d52717a039cbb464729724ad5c60f3efb3700424bbe7d0b200e5ef592b5c07bdbecfca769b8ccb9c58a1ee81af1f9a5f3849c62f46b0b",
+   "taille": 147604,
+   "client": null,
+   "cote": "client"
   }
  ],
  "serveur": "minecraft.lobbik.com",

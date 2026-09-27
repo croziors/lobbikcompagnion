@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "lobbik",
+  "version": "${version}",
+  "name": "Lobbik",
+  "description": "Le réseau Minecraft de Lobbik (hub, La Tour, Le Cube) : passage sans coupure par les ponts, portes et file d'attente, jeux.",
+  "authors": ["Lobbik"],
+  "contact": { "homepage": "https://lobbik.com" },
+  "license": "GPL-3.0-or-later",
+  "environment": "server",
+  "entrypoints": { "server": ["hk.krp.lobbik.Lobbik"] },
+  "mixins": ["lobbik.mixins.json"],
+  "depends": { "fabricloader": ">=0.19.5", "minecraft": "~26.2", "fabric-api": "*" }
+}
